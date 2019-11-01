@@ -1,0 +1,408 @@
+1、安装脚手架(3.版本)
+ 	yarn global add @vue/cli-init  
+2、创建项目名字
+    vue  create vue01
+3、启动项目  
+   改变package.json     启动： yarn  start
+4、安装element-ui
+    yarn add element-ui -S
+    在main.js引入ElementUI
+        import ElementUI from 'element-ui'
+        import 'element-ui/lib/theme-chalk/index.css'
+        Vue.use(ElementUI)  
+5、设置Container 布局容器
+6、安装路由
+    (1)yarn add vue-router
+    (2)创建router文件夹，创建index.js文件
+        import Vue from 'vue';
+        import Router from 'vue-router';
+        Vue.use(Router);
+        export default new Router({
+        routes: [{
+                path: '/',
+                component: () => import(/* webpackChunkName: "home" */ '../components/common/Home.vue'),
+                meta: { title: '自述文件' },
+                children: [{
+                        path: '/dashboard',
+                        component: () => import(/* webpackChunkName: "dashboard" */ '../components/page/Dashboard.vue'),
+                        meta: { title: '系统首页' }
+                    }]
+            }]
+        });
+    （3）在main.js引入
+    （4）创建Home组件
+    （5）在App.vue渲染
+         <router-view></router-view>
+7、安装   yarn add less-loader -D
+8、抽取header
+    全屏显示
+     // 全屏事件
+    handleFullScreen() {
+      // 得到所有的document
+      let element = document.documentElement;
+      // 如果不是全屏
+      if (this.fullscreen) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.oRequestFullscreen) {
+          document.oCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+        // 进入全屏
+      } else {
+        if (element.requestFullscreen) {
+          element.requestFullscreen();
+        } else if (element.webkitRequestFullScreen) {
+          element.webkitRequestFullScreen();
+        } else if (element.mozRequestFullScreen) {
+          element.mozRequestFullScreen();
+        } else if (element.oRequestFullscreen) {
+          element.oRequestFullscreen();
+            // IE11
+        } else if (element.msRequestFullscreen) {
+          element.msRequestFullscreen();
+        }
+      }
+      this.fullscreen = !this.fullscreen;
+    }
+    提示信息
+    注释：（1）effect="light"提示的背景色
+         （2）content提示内容
+         （3）提示的显示位置
+        <el-tooltip effect="light" :content="fullscreen?`取消全屏`:`全屏`" placement="left-start">
+        <i class="el-icon-rank"></i>
+        </el-tooltip>
+    用户下拉菜单
+     <!-- 用户名下拉菜单 -->
+        <!--trigger：触发下拉的行为是点击-->
+        <!--@command点击菜单项 触发的事件-->
+        <!-- 默认情况下hover状态下就能显示下拉菜单的内容，这里设置了trigger的触发下拉的行为为click -->
+        <el-dropdown class="user-name" trigger="click" @command="handleCommand">
+          <span class="el-dropdown-link">
+            {{username}}
+            <i class="el-icon-caret-bottom"></i>
+          </span>
+
+          <el-dropdown-menu slot="dropdown">
+            <a href="https://www.baidu.com/" target="_blank">
+              <el-dropdown-item>项目仓库</el-dropdown-item>
+            </a>
+            <!-- divided显示分割线，command点击菜单项触发的事件回调 -->
+            <el-dropdown-item divided command="loginout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+9、:not()选择器
+/* 不是el-menu--collapse所有sidebar-el-menu宽度为250px */
+.sidebar-el-menu:not(.el-menu--collapse) {
+    width: 250px;
+}
+
+10、图标的使用（自定义图标）https://www.jianshu.com/p/8379597e3f97
+
+    （1）在阿里巴巴下载图标，添加至项目，编辑图标前缀，选择Font class复制衔接
+    （2）复制地址在index.html引入
+          <link rel="stylesheet" href="//at.alicdn.com/t/font_830376_qzecyukz0s.css">
+    （3）创建icon.css文件，在main.js中引入
+           [class^="el-icon-lx"], [class*="el-icon-lx"]
+            {
+            font-family:"lx-iconfont" !important;
+            font-size:18px;
+            font-style:normal;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            }
+    (4)使用
+         <!-- 图标在线使用 -->
+        <i class="el-icon-lx-homepage"></i>
+11、 backtop 
+ <!-- target触发滚动的对象到类名content -->
+        <el-backtop target=".content"></el-backtop>
+12、Tags有点复杂
+  https://www.cnblogs.com/wsjaizlp/p/10875669.html
+13、在vue中不能使用debugger和console.log()
+    注意：第一种：可以window.console.log() 解决console.log()
+         第二种：在package.json中添加配置，配置之后需要重启yarn  start
+                 "rules": {
+                        "no-debugger": 0,
+                        "no-console": 0
+                      },
+14、登录路由权限设置：
+    //使用钩子函数beforeEach对路由进行权限跳转,每个路由改变得时候都会执行beforeEach和afterEach
+    router.beforeEach((to, from, next) => {
+        console.log("to:", to)
+        // console.log("from:",from)
+        // console.log("next:",next)
+        // 设置的浏览器的标题栏，去什么页面就显示什么标题。
+        document.title = `后台管理系统--${to.meta.title}`;
+        // 得到登录的用户信息
+        const role = localStorage.getItem('username');
+        // 需要两个条件，如果只是(to.path!=="/login")这个条件的话，用户登录成功后将不会跳转，因为条件始终是(to.path!=="/login")
+        // 条件是!role &&to.path!=="/login"时，用户登录成功之后，将会执行next，进行管道中的下一个钩子函数、路由，执行跳转
+        if (!role && to.path !== "/login") {
+            // 中断导航跳转到指定的导航去
+            next("/login")
+        } else {
+        // 简单的判断IE10及以下不进入富文本编辑器，该组件不兼容
+            //navigator.userAgent用户声明浏览器用于声明http请求的用户代理头的值
+            if (navigator.userAgent.indexOf('MSIE') > -1 && to.path === '/editor') {
+                Vue.prototype.$alert('vue-quill-editor组件不兼容IE10及以下浏览器，请使用更高版本的浏览器查看', '浏览器不兼容通知', {
+                    confirmButtonText: '确定'
+                });
+            } else {
+                // 调用next(),否则钩子函数将不会执行
+                next();
+            }
+    }
+})
+    登陆之后要用计算属性得到登录名渲染
+    computed: {
+        loginusername() {
+            // 得到登陆的username，如果username为空就是username，否则就是默认值
+            let username = localStorage.getItem('username');
+            return username ? username : this.username;
+        }
+    },
+    
+15、    baseform  获取表单的值
+        用v-model绑定。
+        提交： 
+        submitForm() {
+                let formData = [];
+                for (var key in this.form) {
+                    formData.push(this.form[key])
+                }
+                console.log(formData)
+                // console.log(JSON.stringify(formData))
+                this.$message.success('提交成功！');
+            }
+16、 Vue-Quill-Editor基于 Quill、适用于 Vue 的富文本编辑器，支持服务端渲染和单页应用。
+    yarn  add vue-quill-editor -S
+    引入：
+    import 'quill/dist/quill.core.css'
+    import 'quill/dist/quill.snow.css'
+    import 'quill/dist/quill.bubble.css'
+    import {quillEditor} from 'vue-quill-editor'
+
+    script：     
+         data() {
+            return {
+                content: '',
+                editorOption: {
+                    // some quill options
+                     placeholder: '从这里开始编辑。。。'
+                }
+            }
+        },
+        components: {
+            quillEditor
+        },
+
+        使用：
+         <quill-editor v-model="content" ref="myQuillEditor" :options="editorOption" @blur="onEditorBlur($event)"
+                @focus="onEditorFocus($event)" @ready="onEditorReady($event)">
+            </quill-editor>
+            <el-button class="editor-btn" type="primary" @click="submit">提交</el-button>
+            <div v-html="content">{{content}}</div>
+        
+         methods: {
+            // 失去焦点
+            onEditorBlur(quill) {
+                console.log('editor blur!', quill)
+            },
+            // 获取焦点开始编辑
+            onEditorFocus(quill) {
+                console.log('editor focus!', quill)
+            },
+            // 初始化
+            onEditorReady(quill) {
+                console.log('editor ready!', quill)
+            },
+            // 提交
+             submit(){
+                console.log(this.content);
+                this.$message.success('提交成功！');
+            }
+        }
+        注意：<div v-html="content">{{content}}</div>这是解决富文本编辑器的输出有标签的问题。
+17、mavonEditor编辑器
+    yarn  add mavon-editor --S
+    引入：
+    import mavonEditor from 'mavon-editor'
+    import 'mavon-editor/dist/css/index.css'
+      data() {
+            return {
+                 content: ''
+            }
+        },
+        components: {
+            mavonEditor
+        },
+    使用： <mavon-editor v-model="content"/>
+
+18、图片上传 vue-cropperjs
+    安装：yarn add vue-cropperjs -S
+    引入：
+    import VueCropper from 'vue-cropperjs';
+    import 'cropperjs/dist/cropper.css';
+    export default {
+     components: { VueCropper}
+    }
+    使用：
+    <vue-cropper
+        ref="cropper"
+        :src="imgSrc"
+        alt="Source Image"
+        :cropmove="cropImage"
+        >
+    </vue-cropper>
+    https://github.com/Agontuk/vue-cropperjs  看一下官方示例
+19、vue_echarts:
+    https://github.com/ecomfe/vue-echarts/blob/master/README.zh_CN.md
+    参数详解：https://echarts.apache.org/zh/option3.html#polar
+    安装：yarn  add echarts vue-echarts -S
+    使用：
+   <script type="text/ecmascript-6">
+    import ECharts from 'vue-echarts'
+    // 饼状图
+    import 'echarts/lib/chart/pie'
+    // 图例
+    import 'echarts/lib/component/legend'
+    import 'echarts/lib/component/polar'
+    // 标题
+    import 'echarts/lib/component/title.js'
+    // 工具栏（鼠标放上去的效果）
+    import 'echarts/lib/component/tooltip'
+    export default {
+        name: "basecharts",
+        components: {
+            'v-chart': ECharts
+        },
+        data() {
+            return {
+                polar: {
+                    // 标题
+                    title: {
+                        text: '会员数据统计',
+                        subtext: '动态数据',
+                        // x轴中间
+                        x: 'center'
+                    },
+                    // 工具栏（鼠标放上去的效果）
+                    tooltip: {
+                        // 数据项图形触发，主要在散点图，饼图等无类目轴的图表中使用。
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    // 图例
+                    legend: {
+                        show: true,
+                        orient: 'vertical',
+                        left: 'left',
+                        data: ['微信访问', '公众号访问', '扫码进入', '分享进入', '搜索访问']
+                    },
+                    // 数据
+                    series: [{
+                        name: '访问来源',
+                        type: 'pie',
+                        radius: '55%',
+                        center: ['50%', '60%'],
+                        data: [{
+                                value: 335,
+                                name: '微信访问'
+                            },
+                            {
+                                value: 310,
+                                name: '公众号访问'
+                            },
+                            {
+                                value: 234,
+                                name: '扫码进入'
+                            },
+                            {
+                                value: 135,
+                                name: '分享进入'
+                            },
+                            {
+                                value: 1548,
+                                name: '搜索访问'
+                            }
+                        ],
+                        itemStyle: {
+                            // 图形在高亮状态下的样式
+                            emphasis: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                }
+            }
+        }
+    }
+</script>
+在html中使用： <v-chart :options="polar" autoresize theme="light" />
+20、拖曳组件(注意：要使用Vue.directive( id, [definition] )注册或获取全局指令。)
+    引入:yarn add vuedraggable -S
+
+    import draggable from 'vuedraggable'
+    export default {
+        name: "draglist",
+        data() {
+            return {
+                todo: [{
+                        id: 1,
+                        content: '开发图表组件1'
+                    },
+                    {
+                        id: 2,
+                        content: '开发拖拽组件2'
+                    },
+                    {
+                        id: 3,
+                        content: '开发权限测试组件3'
+                    }
+                ],
+            }
+        },
+        components: {
+            draggable,
+        },
+        methods: {}
+    }
+
+    <div class="drag-box">
+                <div class="drag-box-item">
+                    <div class="item-title">todo</div>
+                    <draggable v-model="todo">
+                        <transition-group class="item-ul">
+                            <div v-for="item in todo" :key="item.id" class="drag-list">
+                                {{item.content}}
+                            </div>
+                        </transition-group>
+                    </draggable>
+                </div>
+            </div>
+
+21、国际化
+    1、 yarn add vue-i18n -S
+    2、main.js 引入
+    // 引入国际化
+    import VueI18n from 'vue-i18n'
+    import { messages } from './components/common/i18n';
+    const i18n = new VueI18n({
+        locale: 'zh',
+        messages
+    });
+    Vue.use(VueI18n) // 通过插件的形式挂载
+
+    new Vue({
+        router,
+        i18n,
+        render: h => h(App),
+    }).$mount('#app')
