@@ -406,3 +406,113 @@
         i18n,
         render: h => h(App),
     }).$mount('#app')
+    -------------------------------------------------------------------------------------------------------------
+    -------------------------------------------------------------------------------------------------------------
+22、mockjs请求数据改造BaseTable
+    （1）、发送请求
+         gettablelist() {
+                // 先准备两个传送给后台的参数，当前页，当前页显示的条数
+                let pagedata = {
+                    limit: this.paginations.pageSize,
+                    currentpage: this.paginations.pageIndex
+                };
+                getlist(pagedata).then(res => {
+                    this.loading = false;
+                    let tabletotal=res.data.data.total;
+                    let tabledata=res.data.data.tablelist;
+                    this.paginations.total = tabletotal;
+                    this.tableData = tabledata;
+                    //  debugger
+                });
+    （2）引入axios  yarn add axios -S
+    （3）创建api/basetablerequest.js,发送请求路径
+       import request from "axios"
+            //获取用户表格数据
+            export function getlist(reqData) {
+                // debugger
+                return request({
+                    url:'/user/list/get',
+                    method: 'get',
+                    data: reqData
+                })
+            }
+
+    （4）Mock.js生成随机数据，拦截 Ajax 请求。
+        安装：yarn add mockjs -D
+        创建mockdata/tablelist.js文件
+        造假数据
+            import Mock from 'mockjs'
+                let List = []
+                const count = 1000
+                for (let i = 0; i < count; i++) {
+                    List.push(Mock.mock({
+                        // id: Mock.Random.guid(),
+                        // sortnum: i + 1,
+                        date:Mock.Random.date(),    
+                        name: Mock.Random.cname(),
+                        province: Mock.Random.province(),
+                        city: Mock.Random.city(),
+                        address: Mock.mock('@city(true)'),
+                        zip: Mock.Random.email(),
+                    }))
+                }
+                console.log("list:",List)
+                export default{
+                    /**
+                    * 获取table列表
+                    * 要带参数 name, page, limt; name可以不填, page,limit有默认值。
+                    * @param name, page, limit
+                    * @return {{code: number, count: number, data: *[]}}
+                    */
+                    getlist:config => {
+                        const { limit , currentpage } = JSON.parse(config.body);
+                        let mockList = List;
+                        const tablelist = mockList.filter((item, index) => index < limit * currentpage && index >= limit * (currentpage - 1))
+                        // debugger
+                        return {
+                            code: 200,
+                            data: {
+                                total: mockList.length,
+                                tablelist: tablelist
+                            }
+                        }
+                    }
+                }
+        创建index.js，把假数据导出去
+            import Mock from 'mockjs'
+            import userAPI from './tablelist'
+            // 设置全局延时 没有延时的话有时候会检测不到数据变化 建议保留
+            Mock.setup({
+                timeout: '300-600'
+            })
+            Mock.mock(/\/user\/list\/get/, 'get', userAPI.getlist)
+            export default Mock;
+        （5）在main.就是导入数据
+            // 导入mockjs数据
+            import "./mockdata/index"
+23、导出excel
+    （1）1、安装依赖  
+        yarn add file-saver //文件保存
+        yarn add xlsx  //xlsx表格
+        yarn add script-loader --dev  //使用script加载器
+    （2）创建excel文件夹，里面放入Blob.js和Export2Excel.js	两个JS文件
+    （3）在组件中通过点击事件使用
+          //导出的方法
+            exportExcel() {
+                require.ensure([], () => {
+                    const {
+                        export_json_to_excel
+                    } = require('../../excel/Export2Excel');
+                    const tHeader = ['序号', '日期', '姓名','省份', '市区', '地址','邮编'];
+                    // 上面设置Excel的表格第一行的标题
+                    const filterVal = ['sortnum', 'date', 'name','province', 'city', 'address','zip'];
+                    // 上面的index、nickName、name是tableData里对象的属性
+                    const list = this.tableData; //把data里的tableData存到list
+                    const data = this.formatJson(filterVal, list);
+                    export_json_to_excel(tHeader, data, '列表excel');
+                })
+            },
+
+            formatJson(filterVal, jsonData) {
+                return jsonData.map(v => filterVal.map(j => v[j]))
+            }

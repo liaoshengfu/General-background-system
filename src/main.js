@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router/index'
@@ -6,6 +7,10 @@ import './components/common/directives'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 Vue.use(ElementUI, { size: 'small' })
+
+// 导入mockjs数据
+import "./mockdata/index"
+
 
 // 自定义图标
 import './assets/css/icon.css';
@@ -25,7 +30,7 @@ Vue.config.productionTip = false;
 
 //使用钩子函数beforeEach对路由进行权限跳转,每个路由改变得时候都会执行beforeEach和afterEach
 router.beforeEach((to, from, next) => {
-    console.log("to:", to)
+    // console.log("to:", to)
     // console.log("from:",from)
     // console.log("next:",next)
     // 设置的浏览器的标题栏，去什么页面就显示什么标题。

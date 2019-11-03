@@ -152,11 +152,6 @@
                                 title: "404页面"
                             }
                         ]
-                    },
-                    {
-                        icon: "el-icon-lx-redpacket_fill",
-                        index: "/donate",
-                        title: "支持作者"
                     }
                 ]
             };
